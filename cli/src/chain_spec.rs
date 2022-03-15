@@ -25,6 +25,7 @@ use node_runtime::{
 	BalancesConfig, Block, CouncilConfig, DemocracyConfig, ElectionsConfig, GrandpaConfig,
 	ImOnlineConfig, IndicesConfig, MaxNominations, SessionConfig, SessionKeys, SocietyConfig,
 	StakerStatus, StakingConfig, SudoConfig, SystemConfig, TechnicalCommitteeConfig,
+	EVMConfig, EthereumConfig,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec::ChainSpecExtension;
@@ -38,6 +39,7 @@ use sp_runtime::{
 	traits::{IdentifyAccount, Verify},
 	Perbill,
 };
+use std::collections::BTreeMap;
 
 pub use node_primitives::{AccountId, Balance, Signature};
 pub use node_runtime::GenesisConfig;
@@ -63,10 +65,6 @@ pub struct Extensions {
 
 /// Specialized `ChainSpec`.
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
-/// Flaming Fir testnet generator
-pub fn flaming_fir_config() -> Result<ChainSpec, String> {
-	ChainSpec::from_json_bytes(&include_bytes!("../res/flaming-fir.json")[..])
-}
 
 fn session_keys(
 	grandpa: GrandpaId,
@@ -363,6 +361,11 @@ pub fn testnet_genesis(
 		gilt: Default::default(),
 		transaction_storage: Default::default(),
 		transaction_payment: Default::default(),
+		evm: EVMConfig {
+			accounts: BTreeMap::new(),
+		},
+		ethereum: EthereumConfig {},
+		base_fee: Default::default(),
 	}
 }
 

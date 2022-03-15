@@ -14,31 +14,30 @@ targets = ["x86_64-unknown-linux-gnu"]
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.0.0" }
 scale-info = { version = "2.0.1", features = ["derive"] }
-node-primitives = { version = "2.0.0", git = 'https://github.com/paritytech/substrate.git' }
-node-runtime = { version = "3.0.0-dev", git = 'https://github.com/paritytech/substrate.git' }
-sc-executor = { version = "0.10.0-dev", git = 'https://github.com/paritytech/substrate.git' }
-sp-core = { version = "6.0.0", git = 'https://github.com/paritytech/substrate.git' }
-sp-keystore = { version = "0.12.0", git = 'https://github.com/paritytech/substrate.git' }
-sp-state-machine = { version = "0.12.0", git = 'https://github.com/paritytech/substrate.git' }
-sp-tracing = { version = "5.0.0", git = 'https://github.com/paritytech/substrate.git' }
-sp-trie = { version = "6.0.0", git = 'https://github.com/paritytech/substrate.git' }
-frame-benchmarking = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git' }
+node-primitives = { version = "2.0.0", path = "../primitives" }
+node-runtime = { version = "3.0.0-dev", path = "../runtime" }
+sc-executor = { version = "0.10.0-dev", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
+sp-core = { version = "6.0.0", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
+sp-keystore = { version = "0.12.0", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
+sp-state-machine = { version = "0.12.0", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
+sp-tracing = { version = "5.0.0", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
+sp-trie = { version = "6.0.0", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
+frame-benchmarking = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
 
 [dev-dependencies]
 criterion = "0.3.0"
-frame-support = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git' }
-frame-system = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git' }
-node-testing = { version = "3.0.0-dev", git = 'https://github.com/paritytech/substrate.git' }
-pallet-balances = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git' }
-pallet-contracts = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git' }
-pallet-im-online = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git' }
-pallet-timestamp = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git' }
-pallet-treasury = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git' }
-sp-application-crypto = { version = "6.0.0", git = 'https://github.com/paritytech/substrate.git' }
-sp-consensus-babe = { version = "0.10.0-dev", git = 'https://github.com/paritytech/substrate.git' }
-sp-runtime = { version = "6.0.0", git = 'https://github.com/paritytech/substrate.git' }
-sp-externalities = { version = "0.12.0", git = 'https://github.com/paritytech/substrate.git' }
-sp-keyring = { version = "6.0.0", git = 'https://github.com/paritytech/substrate.git' }
+frame-support = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
+frame-system = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
+pallet-balances = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
+pallet-contracts = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
+pallet-im-online = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
+pallet-timestamp = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
+pallet-treasury = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
+sp-application-crypto = { version = "6.0.0", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
+sp-consensus-babe = { version = "0.10.0-dev", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
+sp-runtime = { version = "6.0.0", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
+sp-externalities = { version = "0.12.0", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
+sp-keyring = { version = "6.0.0", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
 wat = "1.0"
 futures = "0.3.19"
 
@@ -46,7 +45,3 @@ futures = "0.3.19"
 wasmtime = ["sc-executor/wasmtime"]
 wasmi-errno = ["sc-executor/wasmi-errno"]
 stress-test = []
-
-[[bench]]
-name = "bench"
-harness = false

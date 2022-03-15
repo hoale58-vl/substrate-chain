@@ -1,13 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
-	"bench",
 	"cli",
 	"executor",
 	"primitives",
 	"rpc",
-	"runtime",
-	"testing"
+	"runtime"
 ]
 
 [profile.release]
@@ -23,3 +21,6 @@ inherits = "release"
 lto = "fat"
 # https://doc.rust-lang.org/rustc/codegen-options/index.html#codegen-units
 codegen-units = 1
+
+redox_users = { version = '0.3.5' }
+ahash = { version = '0.5.10' }

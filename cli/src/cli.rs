@@ -23,9 +23,29 @@ pub struct Cli {
 	#[clap(subcommand)]
 	pub subcommand: Option<Subcommand>,
 
+	#[clap(flatten)]
+	#[allow(missing_docs)]
+	pub run: RunCmd,
+}
+
+
+#[allow(missing_docs)]
+#[derive(Debug, clap::Parser)]
+pub struct RunCmd {
 	#[allow(missing_docs)]
 	#[clap(flatten)]
-	pub run: sc_cli::RunCmd,
+	pub base: sc_cli::RunCmd,
+
+	#[clap(long)]
+	pub enable_dev_signer: bool,
+
+	/// Maximum number of logs in a query.
+	#[clap(long, default_value = "10000")]
+	pub max_past_logs: u32,
+
+	/// Maximum fee history cache size.
+	#[clap(long, default_value = "2048")]
+	pub fee_history_limit: u64,
 }
 
 /// Possible subcommands of the main binary.
