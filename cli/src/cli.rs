@@ -16,6 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use crate::command::{BootstrapChainCmd, BootstrapNodeCmd};
+
 /// An overarching CLI command definition.
 #[derive(Debug, clap::Parser)]
 pub struct Cli {
@@ -27,7 +29,6 @@ pub struct Cli {
 	#[allow(missing_docs)]
 	pub run: RunCmd,
 }
-
 
 #[allow(missing_docs)]
 #[derive(Debug, clap::Parser)]
@@ -57,6 +58,12 @@ pub enum Subcommand {
 		about = "Decode given block or extrinsic using current native runtime."
 	)]
 	Inspect(node_inspect::cli::InspectCmd),
+
+	/// Generate genesis file
+	BootstrapChain(BootstrapChainCmd),
+
+    /// Generate and print to stdout keys for a single node
+    BootstrapNode(BootstrapNodeCmd),
 
 	/// The custom benchmark subcommmand benchmarking runtime pallets.
 	#[clap(name = "benchmark", about = "Benchmark runtime pallets.")]

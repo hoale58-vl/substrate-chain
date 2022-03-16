@@ -36,6 +36,7 @@ pub mod chain_spec;
 pub mod service;
 #[cfg(feature = "cli")]
 mod cli;
+#[allow(missing_docs)]
 #[cfg(feature = "cli")]
 mod command;
 

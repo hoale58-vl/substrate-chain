@@ -43,10 +43,7 @@ log = "0.4.8"
 rand = "0.8.5"
 structopt = '0.3.8'
 serde_json = "1.0.79"
-sha3 = "0.10"
 libsecp256k1 = { version = "0.7.0", features = [ "hmac" ] }
-libp2p = "0.43.0"
-tiny-hderive = "0.3.0"
 tiny-bip39 = "0.8.2"
 hex = "0.4.3"
 

@@ -102,7 +102,7 @@ use sp_runtime::{
 	traits::PostDispatchInfoOf, 
 	transaction_validity::TransactionValidityError
 };
-use frame_support::{ConsensusEngineId, StorageValue, traits::FindAuthor};
+use frame_support::{ConsensusEngineId, traits::FindAuthor};
 use sp_std::marker::PhantomData;
 use sp_core::crypto::ByteArray;
 use fp_rpc::txpool::{TxPoolResponse};
@@ -126,8 +126,8 @@ pub fn wasm_binary_unwrap() -> &'static [u8] {
 /// Runtime version.
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("node"),
-	impl_name: create_runtime_str!("substrate-node"),
+	spec_name: create_runtime_str!("procyon"),
+	impl_name: create_runtime_str!("procyon"),
 	authoring_version: 10,
 	// Per convention: if the runtime behavior changes, increment spec_version
 	// and set impl_version to 0. If only runtime

@@ -17,105 +17,68 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-	chain_spec, 
 	service::{new_partial, self, frontier_database_dir}, 
-	Cli, 
-	Subcommand,
 	common::{
-		open_keystore,
 		authority_keys,
 		ChainParams,
 		AccountParams
-	}
+	},
+	cli::{Subcommand, Cli},
+	chain_spec,
 };
-use structopt::StructOpt;
+use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli, Result, KeystoreParams};
 use node_executor::ExecutorDispatch;
-use node_runtime::{Block, RuntimeApi, AccountId};
-use sc_cli::{ChainSpec, Result, RuntimeVersion, SubstrateCli, KeystoreParams};
+use node_runtime::{Block, RuntimeApi};
 use sc_service::PartialComponents;
-use std::str::FromStr;
-use std::io::Write;
+use std::{io::Write};
+use clap::Args;
+use sc_service::ChainType;
 
-impl SubstrateCli for Cli {
-	fn impl_name() -> String {
-		"Substrate Node".into()
-	}
-
-	fn impl_version() -> String {
-		env!("SUBSTRATE_CLI_IMPL_VERSION").into()
-	}
-
-	fn description() -> String {
-		env!("CARGO_PKG_DESCRIPTION").into()
-	}
-
-	fn author() -> String {
-		env!("CARGO_PKG_AUTHORS").into()
-	}
-
-	fn support_url() -> String {
-		"https://github.com/paritytech/substrate/issues/new".into()
-	}
-
-	fn copyright_start_year() -> i32 {
-		2017
-	}
-
-	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
-		let spec = match id {
-			"" =>
-				return Err(
-					"Please specify which chain you want to run, e.g. --dev or --chain=local"
-						.into(),
-				),
-			"dev" => Box::new(chain_spec::development_config()),
-			"local" => Box::new(chain_spec::local_testnet_config()),
-			"staging" => Box::new(chain_spec::staging_testnet_config()),
-			path =>
-				Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
-		};
-		Ok(spec)
-	}
-
-	fn native_runtime_version(_: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-		&node_runtime::VERSION
-	}
-}
-
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
+#[allow(missing_docs)]
 pub struct BootstrapChainCmd {
     /// Force raw genesis storage output.
-    #[structopt(long = "raw")]
+    #[clap(long = "raw")]
     pub raw: bool,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
+	#[allow(missing_docs)]
     pub keystore_params: KeystoreParams,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
+	#[allow(missing_docs)]
     pub chain_params: ChainParams,
 
-	#[structopt(flatten)]
+	#[clap(flatten)]
+	#[allow(missing_docs)]
     pub account_params: AccountParams,
 }
 
 impl BootstrapChainCmd {
+	#[allow(missing_docs)]
     pub fn run(&self) -> Result<()> {
         let genesis_authorities = self
             .account_params
-            .account_ids()
+            .authority_ids()
             .iter()
             .map(|account_id| {
-                let keystore = open_keystore(&self.keystore_params, &self.chain_params, account_id);
-                authority_keys(&keystore, &self.chain_params, account_id, None)
+                authority_keys(Some(account_id), None)
             })
             .collect();
 
+		let faucet_accounts = self
+            .account_params
+            .faucet_ids();
+
         let chain_spec = chain_spec::config(
-            self.chain_params.clone(),
+			self.chain_params.token_symbol(),
+			self.chain_params.chain_name(),
             genesis_authorities,
-            self.chain_params.chain_id(),
-			self.account_params.sudo_account_id()
-        )?;
+			self.chain_params.chain_id(),
+			self.account_params.sudo_account_id(),
+			ChainType::Live,
+			faucet_accounts
+        );
 
         let json = sc_service::chain_ops::build_spec(&chain_spec, self.raw)?;
         if std::io::stdout().write_all(json.as_bytes()).is_err() {
@@ -128,32 +91,32 @@ impl BootstrapChainCmd {
 
 /// The `bootstrap-node` command is used to generate key pairs for a single authority
 /// private keys are stored in a specified keystore, and the public keys are written to stdout.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct BootstrapNodeCmd {
     /// Pass the AccountId of a new node
     ///
     /// Expects a string with an AccountId (hex encoding of an sr2559 public key)
     /// If this argument is not passed a random AccountId will be generated using account-seed argument as a seed
-    #[structopt(long)]
+    #[clap(long)]
     account_id: String,
 
     /// Pass seed used to generate the account pivate key (sr2559) and the corresponding AccountId
-    #[structopt(long)]
+    #[clap(long)]
     pub seed_phrase: Option<String>,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
+	#[allow(missing_docs)]
     pub keystore_params: KeystoreParams,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
+	#[allow(missing_docs)]
     pub chain_params: ChainParams,
 }
 
 impl BootstrapNodeCmd {
+	#[allow(missing_docs)]
     pub fn run(&self) -> Result<()> {
-        let account_id = AccountId::from_str(&self.account_id).expect("Passed string is not a hex encoding of a public key");
-        let keystore = open_keystore(&self.keystore_params, &self.chain_params, &account_id);
-
-        let authority_keys = authority_keys(&keystore, &self.chain_params, &account_id, self.seed_phrase.clone());
+        let authority_keys = authority_keys(None, self.seed_phrase.clone());
         let keys_json = serde_json::to_string_pretty(&authority_keys)
             .expect("serialization of authority keys should have succeeded");
         println!("{}", keys_json);
@@ -171,7 +134,9 @@ pub fn run() -> Result<()> {
 			runner.run_node_until_exit(|config| async move {
 				service::new_full(config, &cli).map_err(sc_cli::Error::Service)
 			})
-		}
+		},
+		Some(Subcommand::BootstrapChain(cmd)) => cmd.run(),
+        Some(Subcommand::BootstrapNode(cmd)) => cmd.run(),
 		Some(Subcommand::Inspect(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 
@@ -278,5 +243,49 @@ pub fn run() -> Result<()> {
 		Some(Subcommand::TryRuntime) => Err("TryRuntime wasn't enabled when building the node. \
 				You can enable it with `--features try-runtime`."
 			.into()),
+	}
+}
+
+impl SubstrateCli for Cli {
+	fn impl_name() -> String {
+		"Procyon".into()
+	}
+
+	fn impl_version() -> String {
+		env!("SUBSTRATE_CLI_IMPL_VERSION").into()
+	}
+
+	fn description() -> String {
+		env!("CARGO_PKG_DESCRIPTION").into()
+	}
+
+	fn author() -> String {
+		env!("CARGO_PKG_AUTHORS").into()
+	}
+
+	fn support_url() -> String {
+		"https://github.com/paritytech/substrate/issues/new".into()
+	}
+
+	fn copyright_start_year() -> i32 {
+		2022
+	}
+
+	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
+		let spec = match id {
+			"" =>
+				return Err(
+					"Please specify which chain you want to run, e.g. --dev or --chain=local"
+						.into(),
+				),
+			"dev" => Box::new(chain_spec::dev_config()),
+			path =>
+				Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
+		};
+		Ok(spec)
+	}
+
+	fn native_runtime_version(_: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
+		&node_runtime::VERSION
 	}
 }
