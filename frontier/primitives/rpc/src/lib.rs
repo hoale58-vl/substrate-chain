@@ -24,6 +24,8 @@ use sp_core::{H160, H256, U256};
 use sp_runtime::{traits::Block as BlockT, Permill};
 use sp_std::vec::Vec;
 
+pub mod txpool;
+
 #[derive(Eq, PartialEq, Clone, Encode, Decode, sp_runtime::RuntimeDebug, scale_info::TypeInfo)]
 pub struct TransactionStatus {
 	pub transaction_hash: H256,

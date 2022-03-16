@@ -16,11 +16,25 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{chain_spec, service, service::new_partial, Cli, Subcommand};
+use crate::{
+	chain_spec, 
+	service::{new_partial, self, frontier_database_dir}, 
+	Cli, 
+	Subcommand,
+	common::{
+		open_keystore,
+		authority_keys,
+		ChainParams,
+		AccountParams
+	}
+};
+use structopt::StructOpt;
 use node_executor::ExecutorDispatch;
-use node_runtime::{Block, RuntimeApi};
-use sc_cli::{ChainSpec, Result, RuntimeVersion, SubstrateCli};
+use node_runtime::{Block, RuntimeApi, AccountId};
+use sc_cli::{ChainSpec, Result, RuntimeVersion, SubstrateCli, KeystoreParams};
 use sc_service::PartialComponents;
+use std::str::FromStr;
+use std::io::Write;
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {
@@ -66,6 +80,85 @@ impl SubstrateCli for Cli {
 	fn native_runtime_version(_: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
 		&node_runtime::VERSION
 	}
+}
+
+#[derive(Debug, StructOpt)]
+pub struct BootstrapChainCmd {
+    /// Force raw genesis storage output.
+    #[structopt(long = "raw")]
+    pub raw: bool,
+
+    #[structopt(flatten)]
+    pub keystore_params: KeystoreParams,
+
+    #[structopt(flatten)]
+    pub chain_params: ChainParams,
+
+	#[structopt(flatten)]
+    pub account_params: AccountParams,
+}
+
+impl BootstrapChainCmd {
+    pub fn run(&self) -> Result<()> {
+        let genesis_authorities = self
+            .account_params
+            .account_ids()
+            .iter()
+            .map(|account_id| {
+                let keystore = open_keystore(&self.keystore_params, &self.chain_params, account_id);
+                authority_keys(&keystore, &self.chain_params, account_id, None)
+            })
+            .collect();
+
+        let chain_spec = chain_spec::config(
+            self.chain_params.clone(),
+            genesis_authorities,
+            self.chain_params.chain_id(),
+			self.account_params.sudo_account_id()
+        )?;
+
+        let json = sc_service::chain_ops::build_spec(&chain_spec, self.raw)?;
+        if std::io::stdout().write_all(json.as_bytes()).is_err() {
+            let _ = std::io::stderr().write_all(b"Error writing to stdout\n");
+        }
+
+        Ok(())
+    }
+}
+
+/// The `bootstrap-node` command is used to generate key pairs for a single authority
+/// private keys are stored in a specified keystore, and the public keys are written to stdout.
+#[derive(Debug, StructOpt)]
+pub struct BootstrapNodeCmd {
+    /// Pass the AccountId of a new node
+    ///
+    /// Expects a string with an AccountId (hex encoding of an sr2559 public key)
+    /// If this argument is not passed a random AccountId will be generated using account-seed argument as a seed
+    #[structopt(long)]
+    account_id: String,
+
+    /// Pass seed used to generate the account pivate key (sr2559) and the corresponding AccountId
+    #[structopt(long)]
+    pub seed_phrase: Option<String>,
+
+    #[structopt(flatten)]
+    pub keystore_params: KeystoreParams,
+
+    #[structopt(flatten)]
+    pub chain_params: ChainParams,
+}
+
+impl BootstrapNodeCmd {
+    pub fn run(&self) -> Result<()> {
+        let account_id = AccountId::from_str(&self.account_id).expect("Passed string is not a hex encoding of a public key");
+        let keystore = open_keystore(&self.keystore_params, &self.chain_params, &account_id);
+
+        let authority_keys = authority_keys(&keystore, &self.chain_params, &account_id, self.seed_phrase.clone());
+        let keys_json = serde_json::to_string_pretty(&authority_keys)
+            .expect("serialization of authority keys should have succeeded");
+        println!("{}", keys_json);
+        Ok(())
+    }
 }
 
 /// Parse command line arguments into service configuration.
@@ -150,7 +243,15 @@ pub fn run() -> Result<()> {
 		},
 		Some(Subcommand::PurgeChain(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
-			runner.sync_run(|config| cmd.run(config.database))
+			runner.sync_run(|config| {
+				// Remove Frontier offchain db
+				let frontier_database_config = sc_service::DatabaseSource::RocksDb {
+					path: frontier_database_dir(&config),
+					cache_size: 0,
+				};
+				cmd.run(frontier_database_config)?;
+				cmd.run(config.database)
+			})
 		},
 		Some(Subcommand::Revert(cmd)) => {
 			let runner = cli.create_runner(cmd)?;

@@ -105,7 +105,7 @@ use sp_runtime::{
 use frame_support::{ConsensusEngineId, StorageValue, traits::FindAuthor};
 use sp_std::marker::PhantomData;
 use sp_core::crypto::ByteArray;
-
+use fp_rpc::txpool::{TxPoolResponse};
 /// Generated voter bag information.
 mod voter_bags;
 
@@ -490,18 +490,6 @@ impl pallet_authorship::Config for Runtime {
 	type UncleGenerations = UncleGenerations;
 	type FilterUncle = ();
 	type EventHandler = (Staking, ImOnline);
-}
-
-/// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
-/// the specifics of the runtime. They can then be made to be agnostic over specific formats
-/// of data like extrinsics, allowing for them to continue syncing the network through upgrades
-/// to even the core data structures.
-pub mod opaque {
-	use super::*;
-
-	pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
-	/// Opaque block type.
-	pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 }
 
 impl_opaque_keys! {
@@ -1560,16 +1548,16 @@ impl fp_rpc::ConvertTransaction<UncheckedExtrinsic> for TransactionConverter {
 	}
 }
 
-impl fp_rpc::ConvertTransaction<opaque::UncheckedExtrinsic> for TransactionConverter {
+impl fp_rpc::ConvertTransaction<sp_runtime::OpaqueExtrinsic> for TransactionConverter {
 	fn convert_transaction(
 		&self,
 		transaction: pallet_ethereum::Transaction,
-	) -> opaque::UncheckedExtrinsic {
+	) -> sp_runtime::OpaqueExtrinsic {
 		let extrinsic = UncheckedExtrinsic::new_unsigned(
 			pallet_ethereum::Call::<Runtime>::transact { transaction }.into(),
 		);
 		let encoded = extrinsic.encode();
-		opaque::UncheckedExtrinsic::decode(&mut &encoded[..])
+		sp_runtime::OpaqueExtrinsic::decode(&mut &encoded[..])
 			.expect("Encoded extrinsic is always valid")
 	}
 }
@@ -1977,6 +1965,30 @@ impl_runtime_apis! {
 			encoded: Vec<u8>,
 		) -> Option<Vec<(Vec<u8>, KeyTypeId)>> {
 			SessionKeys::decode_into_raw_public_keys(&encoded)
+		}
+	}
+
+	impl fp_rpc::txpool::TxPoolRuntimeApi<Block> for Runtime {
+		fn extrinsic_filter(
+			xts_ready: Vec<<Block as BlockT>::Extrinsic>,
+			xts_future: Vec<<Block as BlockT>::Extrinsic>,
+		) -> TxPoolResponse {
+			TxPoolResponse {
+				ready: xts_ready
+					.into_iter()
+					.filter_map(|xt| match xt.0.function {
+						Call::Ethereum(transact { transaction }) => Some(transaction),
+						_ => None,
+					})
+					.collect(),
+				future: xts_future
+					.into_iter()
+					.filter_map(|xt| match xt.0.function {
+						Call::Ethereum(transact { transaction }) => Some(transaction),
+						_ => None,
+					})
+					.collect(),
+			}
 		}
 	}
 
