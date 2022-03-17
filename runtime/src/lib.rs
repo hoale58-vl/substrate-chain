@@ -19,8 +19,8 @@
 //! The Substrate runtime. This can be compiled with `#[no_std]`, ready for Wasm.
 
 #![cfg_attr(not(feature = "std"), no_std)]
-// `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
-#![recursion_limit = "256"]
+// `construct_runtime!` does a lot of recursion and requires us to increase the limit to 512.
+#![recursion_limit = "512"]
 
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_election_provider_support::onchain;
@@ -71,6 +71,7 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 use static_assertions::const_assert;
+use sp_io::hashing::blake2_128;
 
 #[cfg(any(feature = "std", test))]
 pub use frame_system::Call as SystemCall;
@@ -1501,6 +1502,38 @@ impl pallet_base_fee::Config for Runtime {
 	type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
 }
 
+parameter_types! {
+	pub const ProposalLifetime: BlockNumber = 1000;
+}
+
+impl pallet_chainbridge::Config for Runtime {
+	type Event = Event;
+	type AdminOrigin = frame_system::EnsureRoot<Self::AccountId>;
+	type Proposal = Call;
+	type ChainId = ChainId;
+	type ProposalLifetime = ProposalLifetime;
+}
+
+parameter_types! {
+	pub HashId: pallet_chainbridge::ResourceId = pallet_chainbridge::derive_resource_id(1, &blake2_128(b"hash"));
+	pub NativeTokenId: pallet_chainbridge::ResourceId = pallet_chainbridge::derive_resource_id(19, &blake2_128(b"SIP"));
+	pub NFTTokenId: pallet_chainbridge::ResourceId = pallet_chainbridge::derive_resource_id(19, &blake2_128(b"NFT"));
+}
+
+impl pallet_erc721::Config for Runtime {
+	type Event = Event;
+	type Identifier = NFTTokenId;
+}
+
+impl pallet_bridge::Config for Runtime {
+	type Event = Event;
+	type BridgeOrigin = pallet_chainbridge::EnsureBridge<Runtime>;
+	type Currency = pallet_balances::Pallet<Runtime>;
+	type HashId = HashId;
+	type NativeTokenId = NativeTokenId;
+	type Erc721Id = NFTTokenId;
+}
+
 construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
@@ -1559,7 +1592,10 @@ construct_runtime!(
 		Whitelist: pallet_whitelist,
 		Ethereum: pallet_ethereum,
 		EVM: pallet_evm,
-		BaseFee: pallet_base_fee
+		BaseFee: pallet_base_fee,
+		Bridge: pallet_bridge,
+		ChainBridge: pallet_chainbridge,
+		Erc721: pallet_erc721,
 	}
 );
 

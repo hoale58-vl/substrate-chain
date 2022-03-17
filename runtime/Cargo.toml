@@ -115,6 +115,9 @@ fp-rpc = { default-features = false, path = '../frontier/primitives/rpc' }
 fp-self-contained = { default-features = false, path = '../frontier/primitives/self-contained' }
 pallet-base-fee = { default-features = false, path = '../frontier/frame/base-fee' }
 fp-evm = { version = "3.0.0-dev", path = "../frontier/primitives/evm", default-features = false }
+pallet-erc721 = { default-features = false, path = '../pallets/erc721' }
+pallet-chainbridge = { default-features = false, path = '../pallets/chainbridge' }
+pallet-bridge = { default-features = false, path = '../pallets/bridge' }
 
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
@@ -201,6 +204,9 @@ std = [
 	"pallet-evm/std",
 	"pallet-evm-precompile-simple/std",
 	"pallet-evm-precompile-sha3fips/std",
+	"pallet-chainbridge/std",
+	"pallet-erc721/std",
+	"pallet-bridge/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",

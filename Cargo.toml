@@ -5,7 +5,10 @@ members = [
 	"executor",
 	"primitives",
 	"rpc",
-	"runtime"
+	"runtime",
+	"pallets/chainbridge",
+	"pallets/erc721",
+	"pallets/bridge",
 ]
 
 [profile.release]

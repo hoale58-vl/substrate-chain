@@ -179,7 +179,7 @@ pub fn dev_config() -> ChainSpec {
 	let chain_type = ChainType::Development;
 	let token_symbol = "SIP";
 	let chain_name = "Procyon";
-	let chain_id = "49";
+	let chain_id = "43";
 
 	// Single node => Development (Require only one validator)
 	let alith_account = get_account_id_from_seed("bottom drive obey lake curtain smoke basket hold race lonely fit walk");
