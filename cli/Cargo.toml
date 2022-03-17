@@ -46,6 +46,8 @@ serde_json = "1.0.79"
 libsecp256k1 = { version = "0.7.0", features = [ "hmac" ] }
 tiny-bip39 = "0.8.2"
 hex = "0.4.3"
+tiny-hderive = { version = "0.3.0", default-features = false }
+sha3 = { version = "0.9", default-features = false }
 
 # primitives
 sp-authority-discovery = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git', branch = "master" }

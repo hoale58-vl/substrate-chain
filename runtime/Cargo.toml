@@ -108,9 +108,13 @@ pallet-evm = { default-features = false, path = '../frontier/frame/evm' }
 pallet-evm-precompile-simple = { default-features = false, path = '../frontier/frame/evm/precompile/simple' }
 pallet-evm-precompile-sha3fips = { default-features = false, path = '../frontier/frame/evm/precompile/sha3fips' }
 pallet-evm-precompile-modexp = { default-features = false, path = '../frontier/frame/evm/precompile/modexp' }
+pallet-evm-precompile-blake2 = { default-features = false, path = '../frontier/frame/evm/precompile/blake2' }
+pallet-evm-precompile-bn128 = { default-features = false, path = '../frontier/frame/evm/precompile/bn128' }
+pallet-evm-precompile-dispatch = { default-features = false, path = '../frontier/frame/evm/precompile/dispatch' }
 fp-rpc = { default-features = false, path = '../frontier/primitives/rpc' }
 fp-self-contained = { default-features = false, path = '../frontier/primitives/self-contained' }
 pallet-base-fee = { default-features = false, path = '../frontier/frame/base-fee' }
+fp-evm = { version = "3.0.0-dev", path = "../frontier/primitives/evm", default-features = false }
 
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = 'https://github.com/paritytech/substrate.git', branch = "master" }

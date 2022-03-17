@@ -61,8 +61,9 @@ impl BootstrapChainCmd {
             .account_params
             .authority_ids()
             .iter()
-            .map(|account_id| {
-                authority_keys(Some(account_id), None)
+            .map(|authority_id| {
+				let (account_id, stash_id) = authority_id;
+                authority_keys(Some(*account_id), Some(*stash_id), None)
             })
             .collect();
 
@@ -116,7 +117,7 @@ pub struct BootstrapNodeCmd {
 impl BootstrapNodeCmd {
 	#[allow(missing_docs)]
     pub fn run(&self) -> Result<()> {
-        let authority_keys = authority_keys(None, self.seed_phrase.clone());
+        let authority_keys = authority_keys(None, None, self.seed_phrase.clone());
         let keys_json = serde_json::to_string_pretty(&authority_keys)
             .expect("serialization of authority keys should have succeeded");
         println!("{}", keys_json);

@@ -40,7 +40,6 @@ use crate::common::{
 	AuthorityKeys,
 	authority_keys
 };
-use sp_core::sr25519;
 
 /// Node `ChainSpec` extensions.
 ///
@@ -63,7 +62,7 @@ pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
 /// Helper function to create GenesisConfig for testing
 fn genesis(
 	authorities: Vec<AuthorityKeys>,
-	root_key: AccountId,
+	root_key: Option<AccountId>,
 	faucet_accounts: Vec<AccountId>,
 	initial_nominators: Vec<AccountId>,
 	_enable_println: bool
@@ -121,7 +120,7 @@ fn genesis(
 				})
 				.collect(),
 		},
-		sudo: SudoConfig { key: Some(root_key) },
+		sudo: SudoConfig { key: root_key },
 		evm: EVMConfig {
 			accounts: BTreeMap::new(),
 		},
@@ -183,27 +182,23 @@ pub fn dev_config() -> ChainSpec {
 	let chain_id = "49";
 
 	// Single node => Development (Require only one validator)
-	let seed_vec = vec![
-		"Alice",
+	let alith_account = get_account_id_from_seed("bottom drive obey lake curtain smoke basket hold race lonely fit walk");
+	let alith_stash_account = get_account_id_from_seed("bottom drive obey mountain curtain smoke basket hold race lonely fit walk");
+	let accounts : Vec<AccountId> = vec![
+		alith_account.clone()
 	];
-	
-	let accounts : Vec<AccountId> = seed_vec.clone()
-		.into_iter()
-		.map(|seed| {
-			get_account_id_from_seed::<sr25519::Public>(seed)
-		}).collect();
 
-	let authority_keys : Vec<AuthorityKeys> = seed_vec.into_iter()
-		.map(|seed| {
-			authority_keys(None, Some(String::from(seed)))
-		}).collect();
+	// Development mode - Alice will automatically create and finalize block
+	let authority_keys : Vec<AuthorityKeys> = vec![
+		authority_keys(Some(alith_account), Some(alith_stash_account), Some(String::from("Alice")))
+	];
 
 	config(
 		&token_symbol,
 		&chain_name,
 		authority_keys,
 		&chain_id,
-		accounts.clone().into_iter().nth(0).unwrap(),
+		accounts.clone().into_iter().nth(0),
 		chain_type,
 		accounts
 	)
@@ -215,7 +210,7 @@ pub fn config(
 	chain_name:  &str,
 	authorities: Vec<AuthorityKeys>,
 	chain_id: &str,
-	sudo_account: AccountId,
+	sudo_account: Option<AccountId>,
 	chain_type: ChainType,
 	faucet_accounts: Vec<AccountId>
 ) -> ChainSpec {
