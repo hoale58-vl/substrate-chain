@@ -241,7 +241,7 @@ pub fn config(
 		// Properties
 		Some({
 			let json_str =
-				format!("{{\"tokenDecimals\": 18, \"tokenSymbol\": \"{}\"}}", token_symbol)
+				format!("{{\"tokenDecimals\": 18, \"tokenSymbol\": \"{}\", \"ss58Format\": 43}}", token_symbol)
 					.to_string();
 			serde_json::from_str(&json_str).expect("Provided valid json map")
 		}),

@@ -1,22 +1,3 @@
-// Copyright 2019-2021 PureStake Inc.
-// This file is part of Moonbeam.
-
-// Moonbeam is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// Moonbeam is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with Moonbeam.  If not, see <http://www.gnu.org/licenses/>.
-
-//! The Ethereum Signature implementation.
-//!
-//! It includes the Verify and IdentifyAccount traits for the AccountId20
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -55,6 +36,7 @@ pub use serde::{de::DeserializeOwned, Deserialize, Serialize};
 	Ord,
 )]
 pub struct AccountId20(pub [u8; 20]);
+
 #[cfg(feature = "std")]
 impl_serde::impl_fixed_hash_serde!(AccountId20, 20);
 
@@ -81,7 +63,7 @@ impl From<[u8; 20]> for AccountId20 {
 }
 
 impl Into<[u8; 20]> for AccountId20 {
-	fn into(self: Self) -> [u8; 20] {
+	fn into(self) -> [u8; 20] {
 		self.0
 	}
 }
@@ -93,7 +75,7 @@ impl From<H160> for AccountId20 {
 }
 
 impl Into<H160> for AccountId20 {
-	fn into(self: Self) -> H160 {
+	fn into(self) -> H160 {
 		H160(self.0)
 	}
 }

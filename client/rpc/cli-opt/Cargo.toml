@@ -1,0 +1,20 @@
+[package]
+name = "cli-opt"
+authors = ["Hoa Le <lvhoa58@gmail.com>"]
+edition = "2021"
+rust-version = "1.56.1"
+license = "GPL-3.0-only"
+version = "0.15.1"
+
+[dependencies]
+clap = "3.1.6"
+libsecp256k1 = "0.7"
+primitive-types = "0.10.0"
+sha3 = "0.9"
+structopt = "0.3.8"
+tiny-bip39 = "0.8"
+tiny-hderive = "0.3.0"
+node-primitives = { version = "2.0.0", path = "../../../primitives" }
+
+# Substrate
+sp-runtime = { version = "6.0.0", git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }

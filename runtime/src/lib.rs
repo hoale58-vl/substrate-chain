@@ -229,7 +229,7 @@ impl frame_system::Config for Runtime {
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type SystemWeightInfo = frame_system::weights::SubstrateWeight<Runtime>;
-	type SS58Prefix = ConstU16<42>;
+	type SS58Prefix = ConstU16<49>;
 	type OnSetCode = ();
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
@@ -1448,7 +1448,7 @@ impl pallet_evm::GasWeightMapping for EvmGasWeightMapping {
 }
 
 parameter_types! {
-	pub const ChainId: u64 = 42;
+	pub const ChainId: u64 = 200;
 	pub BlockGasLimit: U256 = U256::from(u32::max_value());
 	pub PrecompilesValue: EvmPrecompiles<Runtime> = EvmPrecompiles::<_>::new();
 }

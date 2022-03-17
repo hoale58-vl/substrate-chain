@@ -39,6 +39,7 @@ use sc_cli::SubstrateCli;
 use fc_rpc::EthTask;
 use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use sc_client_api::BlockchainEvents;
+use cli_opt::RpcConfig;
 
 /// The full client type definition.
 pub type FullClient =
@@ -90,6 +91,16 @@ pub fn new_partial(
 	>,
 	ServiceError,
 > {
+	let rpc_config = RpcConfig {
+		ethapi: cli.run.ethapi.clone(),
+		ethapi_max_permits: cli.run.ethapi_max_permits,
+		ethapi_trace_max_count: cli.run.ethapi_trace_max_count,
+		ethapi_trace_cache_duration: cli.run.ethapi_trace_cache_duration,
+		eth_log_block_cache: cli.run.eth_log_block_cache,
+		max_past_logs: cli.run.max_past_logs,
+		fee_history_limit: cli.run.fee_history_limit,
+	};
+
 	let telemetry = config
 		.telemetry_endpoints
 		.clone()
@@ -215,6 +226,7 @@ pub fn new_partial(
 		let fee_history_limit = cli.run.fee_history_limit;
 		let is_authority = config.role.is_authority();
 		let enable_dev_signer = cli.run.enable_dev_signer;
+		let ethapi_cmd = rpc_config.ethapi.clone();
 
 		let rpc_extensions_builder = {
 			let filter_pool = filter_pool.clone();
@@ -252,6 +264,7 @@ pub fn new_partial(
 					fee_history_cache: fee_history_cache.clone(),
 					overrides: overrides.clone(),
 					block_data_cache: block_data_cache.clone(),
+					ethapi_cmd: ethapi_cmd.clone(),
 				};
 
 				node_rpc::create_full(deps).map_err(Into::into)

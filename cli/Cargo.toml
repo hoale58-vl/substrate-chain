@@ -123,6 +123,8 @@ fc-rpc = { path = '../frontier/client/rpc' }
 fc-db = { path = '../frontier/client/db' }
 fc-mapping-sync = { path = '../frontier/client/mapping-sync' }
 
+cli-opt = { path = "../client/rpc/cli-opt" }
+
 [dev-dependencies]
 sc-keystore = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
 sc-client-db = { version = "0.10.0-dev", git = 'https://github.com/paritytech/substrate.git', branch = "master" }

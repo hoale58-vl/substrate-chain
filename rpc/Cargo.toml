@@ -46,3 +46,6 @@ node-runtime = { version = "3.0.0-dev", path = "../runtime" }
 jsonrpc-pubsub = "18.0.0"
 sc-transaction-pool = { version = "4.0.0-dev", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
 sc-network = { version = "0.10.0-dev", git = 'https://github.com/paritytech/substrate.git', branch = "master" }
+
+rpc-txpool = { path = "../client/rpc/txpool" }
+cli-opt = { path = "../client/rpc/cli-opt" }

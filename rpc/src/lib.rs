@@ -54,7 +54,8 @@ use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use fc_rpc::{
 	EthBlockDataCache, OverrideHandle, RuntimeApiStorageOverride, SchemaV1Override,
 	SchemaV2Override, SchemaV3Override, StorageOverride, HexEncodedIdProvider, EthPubSubApi, EthPubSubApiServer,
-	Web3Api, Web3ApiServer, EthApi, EthApiServer, EthFilterApi, EthFilterApiServer
+	Web3Api, Web3ApiServer, EthApi, EthApiServer, EthFilterApi, EthFilterApiServer,
+	NetApiServer, NetApi,
 };
 use std::collections::BTreeMap;
 use sp_runtime::traits::BlakeTwo256;
@@ -62,6 +63,8 @@ use fp_storage::EthereumStorageSchema;
 use jsonrpc_pubsub::manager::SubscriptionManager;
 use sc_transaction_pool::{ChainApi, Pool};
 use sc_network::NetworkService;
+use rpc_txpool::{TxPool, TxPoolServer};
+use cli_opt::EthApi as EthApiCmd;
 
 /// Extra dependencies for BABE.
 pub struct BabeDeps {
@@ -128,6 +131,8 @@ pub struct FullDeps<C, P, SC, B, A: ChainApi> {
 	pub overrides: Arc<OverrideHandle<Block>>,
 	/// Cache for Ethereum block data.
 	pub block_data_cache: Arc<EthBlockDataCache<Block>>,
+	/// The list of optional RPC extensions.
+	pub ethapi_cmd: Vec<EthApiCmd>,
 }
 
 /// A IO handler that uses all Full RPC extensions.
@@ -190,6 +195,7 @@ where
 	C::Api: BlockBuilder<Block>,
 	C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>,
 	C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
+	C::Api: fp_rpc::txpool::TxPoolRuntimeApi<Block>,
 	P: TransactionPool<Block = Block> + 'static,
 	A: ChainApi<Block = Block> + 'static,
 	SC: SelectChain<Block> + 'static,
@@ -225,7 +231,8 @@ where
 		fee_history_limit,
 		fee_history_cache,
 		overrides,
-		block_data_cache
+		block_data_cache,
+		ethapi_cmd,
 	 } = deps;
 
 	let BabeDeps { keystore, babe_config, shared_epoch_changes } = babe;
@@ -288,7 +295,7 @@ where
 	io.extend_with(EthApiServer::to_delegate(EthApi::new(
 		client.clone(),
 		pool.clone(),
-		graph,
+		graph.clone(),
 		Some(node_runtime::TransactionConverter),
 		network.clone(),
 		signers,
@@ -311,6 +318,19 @@ where
 		),
 		overrides,
 	)));
+	io.extend_with(NetApiServer::to_delegate(NetApi::new(
+		client.clone(),
+		network.clone(),
+		// Whether to format the `peer_count` response as Hex (default) or not.
+		true,
+	)));
+
+	if ethapi_cmd.contains(&EthApiCmd::Txpool) {
+		io.extend_with(TxPoolServer::to_delegate(TxPool::new(
+			Arc::clone(&client),
+			graph,
+		)));
+	}
 
 	Ok(io)
 }

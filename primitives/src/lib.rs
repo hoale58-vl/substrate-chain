@@ -26,7 +26,8 @@ use sp_runtime::{
 	OpaqueExtrinsic,
 };
 
-mod account;
+#[allow(missing_docs)]
+pub mod account;
 use account::EthereumSignature;
 
 /// An index to a block.
