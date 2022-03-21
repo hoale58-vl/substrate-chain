@@ -41,8 +41,8 @@ use frame_system::{
 	limits::{BlockLength, BlockWeights},
 	EnsureRoot, EnsureSigned,
 };
-pub use node_primitives::{AccountId, Signature};
-use node_primitives::{AccountIndex, Balance, BlockNumber, Hash, Index, Moment};
+pub use node_primitives::{AccountId, Signature, Balance};
+use node_primitives::{AccountIndex, BlockNumber, Hash, Index, Moment};
 use pallet_contracts::weights::WeightInfo;
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
@@ -230,7 +230,7 @@ impl frame_system::Config for Runtime {
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type SystemWeightInfo = frame_system::weights::SubstrateWeight<Runtime>;
-	type SS58Prefix = ConstU16<49>;
+	type SS58Prefix = ConstU16<43>;
 	type OnSetCode = ();
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
@@ -1449,7 +1449,7 @@ impl pallet_evm::GasWeightMapping for EvmGasWeightMapping {
 }
 
 parameter_types! {
-	pub const ChainId: u64 = 200;
+	pub const ChainId: u64 = 43;
 	pub BlockGasLimit: U256 = U256::from(u32::max_value());
 	pub PrecompilesValue: EvmPrecompiles<Runtime> = EvmPrecompiles::<_>::new();
 }

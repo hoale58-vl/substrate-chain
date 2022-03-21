@@ -32,13 +32,16 @@ use sp_runtime::{
 	Perbill,
 };
 use std::collections::BTreeMap;
+use sp_consensus_babe::AuthorityId as BabeId;
+use grandpa_primitives::AuthorityId as GrandpaId;
+use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
+use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 
-pub use node_primitives::{AccountId, Balance, Signature};
-pub use node_runtime::GenesisConfig;
+pub use node_runtime::{AccountId, Balance, Signature, GenesisConfig};
 use crate::common::{
 	get_account_id_from_seed, 
 	AuthorityKeys,
-	authority_keys
+	get_from_seed
 };
 
 /// Node `ChainSpec` extensions.
@@ -182,15 +185,24 @@ pub fn dev_config() -> ChainSpec {
 	let chain_id = "43";
 
 	// Single node => Development (Require only one validator)
-	let alith_account = get_account_id_from_seed("bottom drive obey lake curtain smoke basket hold race lonely fit walk");
+	let seed_phrase = "bottom drive obey lake curtain smoke basket hold race lonely fit walk";
+	let alith_account = get_account_id_from_seed(seed_phrase);
 	let alith_stash_account = get_account_id_from_seed("bottom drive obey mountain curtain smoke basket hold race lonely fit walk");
 	let accounts : Vec<AccountId> = vec![
-		alith_account.clone()
+		alith_account.clone(),
+		alith_stash_account.clone()
 	];
 
 	// Development mode - Alice will automatically create and finalize block
 	let authority_keys : Vec<AuthorityKeys> = vec![
-		authority_keys(Some(alith_account), Some(alith_stash_account), Some(String::from("Alice")))
+		AuthorityKeys { 
+			account_id: alith_account, 
+			stash_account_id: alith_stash_account,
+			babe_key: get_from_seed::<BabeId>(seed_phrase), 
+			grandpa_key: get_from_seed::<GrandpaId>(seed_phrase), 
+			im_online_key: get_from_seed::<ImOnlineId>(seed_phrase), 
+			authority_discovery_key: get_from_seed::<AuthorityDiscoveryId>(seed_phrase)
+		}
 	];
 
 	config(
@@ -198,7 +210,7 @@ pub fn dev_config() -> ChainSpec {
 		&chain_name,
 		authority_keys,
 		&chain_id,
-		accounts.clone().into_iter().nth(0),
+		Some(alith_account),
 		chain_type,
 		accounts
 	)

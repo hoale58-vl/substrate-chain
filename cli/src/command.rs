@@ -21,7 +21,10 @@ use crate::{
 	common::{
 		authority_keys,
 		ChainParams,
-		AccountParams
+		AccountParams,
+		open_keystore,
+		get_account_id_from_seed,
+		p2p_key,
 	},
 	cli::{Subcommand, Cli},
 	chain_spec,
@@ -63,7 +66,14 @@ impl BootstrapChainCmd {
             .iter()
             .map(|authority_id| {
 				let (account_id, stash_id) = authority_id;
-                authority_keys(Some(*account_id), Some(*stash_id), None)
+				let keystore = open_keystore(&self.keystore_params, &self.chain_params, &account_id);
+				p2p_key(&self.chain_params, &account_id);
+                authority_keys(
+					Some(*account_id), 
+					Some(*stash_id), 
+					None,
+					&keystore
+				)
             })
             .collect();
 
@@ -103,7 +113,7 @@ pub struct BootstrapNodeCmd {
 
     /// Pass seed used to generate the account pivate key (sr2559) and the corresponding AccountId
     #[clap(long)]
-    pub seed_phrase: Option<String>,
+    pub seed_phrase: String,
 
     #[clap(flatten)]
 	#[allow(missing_docs)]
@@ -117,10 +127,20 @@ pub struct BootstrapNodeCmd {
 impl BootstrapNodeCmd {
 	#[allow(missing_docs)]
     pub fn run(&self) -> Result<()> {
-        let authority_keys = authority_keys(None, None, self.seed_phrase.clone());
-        let keys_json = serde_json::to_string_pretty(&authority_keys)
+		let account_id = get_account_id_from_seed(self.seed_phrase.clone().as_str());
+		let keystore = open_keystore(&self.keystore_params, &self.chain_params, &account_id);
+        let keys = authority_keys(
+			None, 
+			None, 
+			Some(self.seed_phrase.clone()), 
+			&keystore
+		);
+		let p2p_key = p2p_key(&self.chain_params, &account_id);
+		
+        let keys_json = serde_json::to_string_pretty(&keys)
             .expect("serialization of authority keys should have succeeded");
-        println!("{}", keys_json);
+		let p2p_key_serialized = serde_json::to_string(&p2p_key).unwrap();
+        println!("{}\npeer_id: {}", keys_json, p2p_key_serialized);
         Ok(())
     }
 }
