@@ -102,16 +102,17 @@ telemetry_url=wss://telemetry.hoalv.tk/submit/
 
 docker network create substrate
 
-for account_id in $account_ids; do
-  docker run -d \
+docker run -d \
       --restart always \
-      -v $(pwd)/workspace:/tmp \
+      -v $(pwd):/tmp \
       --name $account_id \
       --log-opt max-size=5m \
       --log-opt max-file=1 \
-      --network substrate \
+      -p 9933:9933 \
+      -p 9944:9944 \
+      -p 30334:30334 \
       sip-procyon \
-      ./node \
+      --name $account_id \
       --validator \
       --chain "/tmp/chainspec.json" \
       --base-path "/tmp/$account_id" \
@@ -121,13 +122,19 @@ for account_id in $account_ids; do
       --unsafe-rpc-external \
       --unsafe-ws-external \
       --port 30334 \
-      --unit-creation-delay 500 \
       --discover-local \
       --allow-private-ipv4 \
-      --keep-blocks 100 \
-      --state-cache-size 0 \
       --telemetry-url "$telemetry_url 0" \
       --node-key-file "/tmp/$account_id/p2p_key" \
-      --execution Wasm
+      --execution Native
+done
+```
+
+# Remove containers
+
+```
+for account_id in $account_ids; do
+  docker stop $account_id
+  docker rm $account_id
 done
 ```
