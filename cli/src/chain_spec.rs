@@ -198,10 +198,10 @@ pub fn dev_config() -> ChainSpec {
 		AuthorityKeys { 
 			account_id: alith_account, 
 			stash_account_id: alith_stash_account,
-			babe_key: get_from_seed::<BabeId>(seed_phrase), 
-			grandpa_key: get_from_seed::<GrandpaId>(seed_phrase), 
-			im_online_key: get_from_seed::<ImOnlineId>(seed_phrase), 
-			authority_discovery_key: get_from_seed::<AuthorityDiscoveryId>(seed_phrase)
+			babe_key: get_from_seed::<BabeId>("Alice"), 
+			grandpa_key: get_from_seed::<GrandpaId>("Alice"), 
+			im_online_key: get_from_seed::<ImOnlineId>("Alice"), 
+			authority_discovery_key: get_from_seed::<AuthorityDiscoveryId>("Alice")
 		}
 	];
 
